@@ -3,24 +3,18 @@
    and using interrupts https://chome.nerpa.tech/mcu/rotary-encoder-interrupt-service-routine-for-avr-micros/
 
    This example does not use the port read method. Tested with Nano and ESP32
-   both encoder A and B pins must be connected to interrupt enabled pins
-   
-   Connections
-   ===========
-   Encoder | ESP32 |  Nano
-   --------------------------
-     A     |  D5   |  Nano D2
-     B     |  D21  |  Nano D3
-     GND   |  GND  |  GND
+   both encoder A and B pins must be connected to interrupt enabled pins, see here for more info:
+   https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
 */
 
 // Define rotary encoder pins
-#define ENC_A 21
-#define ENC_B 19
+#define ENC_A 2
+#define ENC_B 3
 
 unsigned long _lastIncReadTime = micros(); 
 unsigned long _lastDecReadTime = micros(); 
 int _pauseLength = 25000;
+int _fastIncrement = 10;
 
 volatile int counter = 0;
 
@@ -65,7 +59,7 @@ void read_encoder() {
   if( encval > 3 ) {        // Four steps forward
     int changevalue = 1;
     if((micros() - _lastIncReadTime) < _pauseLength) {
-      changevalue = 10*changevalue; 
+      changevalue = _fastIncrement * changevalue; 
     }
     _lastIncReadTime = micros();
     counter = counter + changevalue;              // Update counter
@@ -74,10 +68,10 @@ void read_encoder() {
   else if( encval < -3 ) {        // Four steps backward
     int changevalue = -1;
     if((micros() - _lastDecReadTime) < _pauseLength) {
-      changevalue = 10*changevalue; 
+      changevalue = _fastIncrement * changevalue; 
     }
     _lastDecReadTime = micros();
     counter = counter + changevalue;              // Update counter
     encval = 0;
   }
-}
+} 
